@@ -1,5 +1,5 @@
+
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 function Home() {
   const [Todos, setTodos] = useState([]);
@@ -7,68 +7,76 @@ function Home() {
   const [editIndex, setEditIndex] = useState(null);
   const [editText, setEditText] = useState('');
 
+const BASE_URL = 'http://localhost:5000/tododb/';
 
-  const BASE_URL = 'http://localhost:5000/tododb';
 
-  const fetchTodo = async () =>{
+  const fetchTodo = async () => {
     try {
-      
-      await fetch(BASE_URL)
-        .then(res => {
-          // console.log(res);
-         return res.json();
-        })
-      //   .then(res => {
-      // //     const arr = [];
-
-      // // res.data.map((obj) => arr.push(obj.data))
-
-      // // setTodo(...arr);
-      //     console.log(res)
-      //     return res
-      //   })
-      .catch(err => {
-        console.log("found error")
-        console.error(err.message);
-        console.log(err)
+      const res = await fetch(BASE_URL);
+      const data = await res.json(); // ✅ response ko JSON mein badla
+      const array = new Array();
+      data.map((obj) =>{
+        array.push(obj.data)
       })
-
-
-      
-    setTodos(res.data)
-    } catch (e) {
-            console.error('❌ Error fetching todos:', e);
-  
+      setTodos([...array]); // ✅ State update ki
+      console.log("✅ Data fetched:", data);
+    } catch (err) {
+      console.error("❌ Error fetching todos:", err.message);
     }
-  }  
+  };
 
-useEffect(() =>{
-  fetchTodo();
-},[]);
-
-  console.log(Todos);
+  useEffect(() => {
+    fetchTodo(); // 📥 Component mount pe data fetch
+  }, []);
 
 
+  const addTodo = async () => {
+  if (NewTodo.trim() !== '') {
+    try {
+      const res = await fetch(BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data: NewTodo.trim() }), // 👈 todo object
+      });
 
-function addTodo(){
-  if(NewTodo.trim() !== ''){
-    setTodos([...Todos,NewTodo.trim()])
-    setNewTodo('')
+      const newItem = await res.json();
+      setTodos([...Todos, NewTodo]); // 👈 update local list
+      setNewTodo('');
+    } catch (err) {
+      console.error("❌ Error adding todo:", err.message);
+    }
   }
-}
+};
+
+
+
+// function addTodo(){
+//   if(NewTodo.trim() !== ''){
+//     setTodos([...Todos,NewTodo.trim()])
+//     setNewTodo('')
+//   }
+// }
 
 function deleteTodo(index){
-  setTodos(Todos.filter((_,id) => id !== index))
+  setTodos(Todos.filter((_,_id) => _id !== index))
 }
 
-function edit(id){
-  setEditIndex(id)
-  setEditText(Todos[id])
+
+
+
+
+
+
+function edit(_id){
+  setEditIndex(_id)
+  setEditText(Todos[_id])
 }
 
-function updateTodo(id,text){
+function updateTodo(_id,text){
   const updatedTodos = [...Todos]
-  updatedTodos[id] = text.trim()
+  updatedTodos[_id] = text.trim()
   setTodos(updatedTodos)
   setEditIndex(null)
   setEditText('')
@@ -100,9 +108,9 @@ function updateTodo(id,text){
 
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">🗂️ Your Todo List</h2>
         <ul className="space-y-3">
-          {Todos.map((item, id) => (
-            <li key={id} className="flex items-center justify-between bg-gray-100 rounded-lg p-3 shadow-sm">
-              {editIndex === id ? (
+          {Todos.map((item, _id) => (
+            <li key={_id} className="flex items-center justify-between bg-gray-100 rounded-lg p-3 shadow-sm">
+              {editIndex === _id ? (
                 <>
                   <input
                     type="text"
@@ -112,7 +120,7 @@ function updateTodo(id,text){
                     className="flex-1 p-2 border rounded-md mr-2 focus:outline-none"
                   />
                   <button
-                    onClick={() => updateTodo(id, editText)}
+                    onClick={() => updateTodo(_id, editText)}
                     className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 mr-2"
                   >
                     Save
@@ -128,13 +136,13 @@ function updateTodo(id,text){
                 <>
                   <span className="flex-1 text-gray-800 font-medium">{item}</span>
                   <button
-                    onClick={() => edit(id)}
+                    onClick={() => edit(_id)}
                     className="cursor-pointer px-3 py-1 bg-yellow-400 text-white rounded-md hover:bg-yellow-500 mr-2"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => deleteTodo(id)}
+                    onClick={() => deleteTodo(_id)}
                     className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
                   >
                     Delete
