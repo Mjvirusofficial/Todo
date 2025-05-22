@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function Home() {
   const [Todos, setTodos] = useState([]);
@@ -6,30 +7,73 @@ function Home() {
   const [editIndex, setEditIndex] = useState(null);
   const [editText, setEditText] = useState('');
 
-  const addTodo = () => {
-    if (NewTodo.trim() !== '') {
-      setTodos([...Todos, NewTodo.trim()]);
-      setNewTodo('');
+
+  const BASE_URL = 'http://localhost:5000/tododb';
+
+  const fetchTodo = async () =>{
+    try {
+      
+      await fetch(BASE_URL)
+        .then(res => {
+          // console.log(res);
+         return res.json();
+        })
+      //   .then(res => {
+      // //     const arr = [];
+
+      // // res.data.map((obj) => arr.push(obj.data))
+
+      // // setTodo(...arr);
+      //     console.log(res)
+      //     return res
+      //   })
+      .catch(err => {
+        console.log("found error")
+        console.error(err.message);
+        console.log(err)
+      })
+
+
+      
+    setTodos(res.data)
+    } catch (e) {
+            console.error('❌ Error fetching todos:', e);
+  
     }
-  };
+  }  
 
-  const deleteTodo = (id) => {
-    const updatedTodos = Todos.filter((_, index) => index !== id);
-    setTodos(updatedTodos);
-    if (editIndex === id) setEditIndex(null);
-  };
+useEffect(() =>{
+  fetchTodo();
+},[]);
 
-  const updateTodo = (id, text) => {
-    const updatedTodos = [...Todos];
-    updatedTodos[id] = text.trim();
-    setTodos(updatedTodos);
-    setEditIndex(null);
-  };
+  console.log(Todos);
 
-  const edit = (id) => {
-    setEditIndex(id);
-    setEditText(Todos[id]);
-  };
+
+
+function addTodo(){
+  if(NewTodo.trim() !== ''){
+    setTodos([...Todos,NewTodo.trim()])
+    setNewTodo('')
+  }
+}
+
+function deleteTodo(index){
+  setTodos(Todos.filter((_,id) => id !== index))
+}
+
+function edit(id){
+  setEditIndex(id)
+  setEditText(Todos[id])
+}
+
+function updateTodo(id,text){
+  const updatedTodos = [...Todos]
+  updatedTodos[id] = text.trim()
+  setTodos(updatedTodos)
+  setEditIndex(null)
+  setEditText('')
+}
+
 
 
 
@@ -48,7 +92,7 @@ function Home() {
           />
           <button
             onClick={addTodo}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow-md transition duration-200"
+            className="px-4 py-2 cursor-pointer bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow-md transition duration-200"
           >
             Add
           </button>
@@ -69,13 +113,13 @@ function Home() {
                   />
                   <button
                     onClick={() => updateTodo(id, editText)}
-                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 mr-2"
+                    className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 mr-2"
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditIndex(null)}
-                    className="px-3 py-1 bg-gray-400 text-white rounded-md hover:bg-gray-500"
+                    className=" cursor-pointer px-3 py-1 bg-gray-400 text-white rounded-md hover:bg-gray-500"
                   >
                     Cancel
                   </button>
@@ -85,16 +129,17 @@ function Home() {
                   <span className="flex-1 text-gray-800 font-medium">{item}</span>
                   <button
                     onClick={() => edit(id)}
-                    className="px-3 py-1 bg-yellow-400 text-white rounded-md hover:bg-yellow-500 mr-2"
+                    className="cursor-pointer px-3 py-1 bg-yellow-400 text-white rounded-md hover:bg-yellow-500 mr-2"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => deleteTodo(id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                    className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
                   >
                     Delete
                   </button>
+                  
                 </>
               )}
             </li>

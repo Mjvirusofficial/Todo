@@ -14,12 +14,9 @@ app.use(express.json());
 app.use(cors());
 
 // Connect to MongoDB
-mongoose.connect(`${process.env.MONGODB_URL}/tododb`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ MongoDB connected successfully'))
-.catch((e) => console.log("❌ MongoDB connection error:", e));
+mongoose.connect(`${process.env.MONGODB_URL}/tododb`)
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch((e) => console.log("❌ MongoDB connection error:", e));
 
 // Define routes
 const router = express.Router()
@@ -30,18 +27,18 @@ router.post('/', async (req, res) => {
       data: req.body.data,
     });
     const savedTodo = await newTodo.save();
-    res.status(201).json(savedTodo);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    return res.status(201).json(savedTodo);
+  } catch (e) {
+    return res.status(400).json({ message: e.message });
   }
 });
 
 router.get('/', async (req, res) => {
   try {
     const todos = await Todo.find();
-    res.json(todos);
+   return res.json(todos);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+   return res.status(500).json({ message: err.message });
   }
 });
 
