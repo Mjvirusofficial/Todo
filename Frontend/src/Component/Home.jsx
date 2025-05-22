@@ -31,12 +31,7 @@ function Home() {
     setEditText(Todos[id]);
   };
 
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter" && NewTodo.trim() !== "") {
-      setTodos([...Todos, NewTodo.trim()]);
-      setNewTodo("");
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-200 to-purple-300 p-6">
