@@ -1,88 +1,67 @@
 
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function Home() {
   const [Todos, setTodos] = useState([]);
   const [NewTodo, setNewTodo] = useState('');
   const [editIndex, setEditIndex] = useState(null);
   const [editText, setEditText] = useState('');
+    const [newEditIndex, setnewEditIndex] = useState(null);
 
-const BASE_URL = 'http://localhost:5000/tododb/';
+
+  const BASE_URL = 'http://localhost:5000/tododb/';
 
 
   const fetchTodo = async () => {
-    try {
-      const res = await fetch(BASE_URL);
-      const data = await res.json(); // ✅ response ko JSON mein badla
-      const array = new Array();
-      data.map((obj) =>{
-        array.push(obj.data)
-      })
-      setTodos([...array]); // ✅ State update ki
-      console.log("✅ Data fetched:", data);
-    } catch (err) {
-      console.error("❌ Error fetching todos:", err.message);
-    }
-  };
+    const fetch = await axios.get(BASE_URL)
+    const fetchTodoArray = []
 
+    fetch.data.map((i) => {
+      fetchTodoArray.push(i)
+    })
+
+    setTodos(fetchTodoArray)
+  }
   useEffect(() => {
-    fetchTodo(); // 📥 Component mount pe data fetch
-  }, []);
-
+    fetchTodo()
+  }, [])
 
   const addTodo = async () => {
-  if (NewTodo.trim() !== '') {
-    try {
-      const res = await fetch(BASE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: NewTodo.trim() }), // 👈 todo object
-      });
+    await axios.post(BASE_URL, { data: NewTodo.trim() })
+    fetchTodo()
 
-      const newItem = await res.json();
-      setTodos([...Todos, NewTodo]); // 👈 update local list
-      setNewTodo('');
-    } catch (err) {
-      console.error("❌ Error adding todo:", err.message);
-    }
   }
-};
+
+  const deleteTodo = async (id) => {
+    await axios.delete(BASE_URL + id)
+    fetchTodo()
+  }
 
 
 
-// function addTodo(){
-//   if(NewTodo.trim() !== ''){
-//     setTodos([...Todos,NewTodo.trim()])
-//     setNewTodo('')
-//   }
+  function edit(id) {
+    setEditIndex(id)
+    const edit = [...Todos]
+    setEditText(edit[id].data)
+    console.log(edit[id]._id)
+    setnewEditIndex(edit[id]._id)
+
+  }
+
+
+  const updateTodo = async (_,editText) => {
+    await axios.put(BASE_URL + newEditIndex, { data: editText.trim() })
+    setEditIndex(null)
+    setEditText('')
+    fetchTodo()
+    setnewEditIndex(null)
+  }
+
+ 
+// function addSomething(){
+
 // }
-
-function deleteTodo(index){
-  setTodos(Todos.filter((_,_id) => _id !== index))
-}
-
-
-
-
-
-
-
-function edit(_id){
-  setEditIndex(_id)
-  setEditText(Todos[_id])
-}
-
-function updateTodo(_id,text){
-  const updatedTodos = [...Todos]
-  updatedTodos[_id] = text.trim()
-  setTodos(updatedTodos)
-  setEditIndex(null)
-  setEditText('')
-}
-
-
 
 
   return (
@@ -107,10 +86,24 @@ function updateTodo(_id,text){
         </div>
 
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">🗂️ Your Todo List</h2>
+        
         <ul className="space-y-3">
-          {Todos.map((item, _id) => (
-            <li key={_id} className="flex items-center justify-between bg-gray-100 rounded-lg p-3 shadow-sm">
-              {editIndex === _id ? (
+          {
+            Todos.length == 0 ? 
+                        <li className="flex items-center justify-between bg-gray-100 rounded-lg p-3 shadow-sm">No record add something 😉
+                         {/* <button
+                    onClick={() => addSomething()}
+                    className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-red-600"
+                  >
+                    Add Something 😉
+                  </button> */}
+                        </li>
+            :
+
+            
+            Todos.map((item, id) => (
+            <li key={id} className="flex items-center justify-between bg-gray-100 rounded-lg p-3 shadow-sm">
+              {editIndex === id ? (
                 <>
                   <input
                     type="text"
@@ -120,7 +113,7 @@ function updateTodo(_id,text){
                     className="flex-1 p-2 border rounded-md mr-2 focus:outline-none"
                   />
                   <button
-                    onClick={() => updateTodo(_id, editText)}
+                    onClick={() => updateTodo(id, editText)}
                     className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 mr-2"
                   >
                     Save
@@ -134,20 +127,20 @@ function updateTodo(_id,text){
                 </>
               ) : (
                 <>
-                  <span className="flex-1 text-gray-800 font-medium">{item}</span>
+                  <span className="flex-1 text-gray-800 font-medium">{item.data}</span>
                   <button
-                    onClick={() => edit(_id)}
+                    onClick={() => edit(id)}
                     className="cursor-pointer px-3 py-1 bg-yellow-400 text-white rounded-md hover:bg-yellow-500 mr-2"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => deleteTodo(_id)}
+                    onClick={() => deleteTodo(item._id)}
                     className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
                   >
                     Delete
                   </button>
-                  
+
                 </>
               )}
             </li>
