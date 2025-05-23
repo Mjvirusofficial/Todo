@@ -29,6 +29,7 @@ function Home() {
 
   const addTodo = async () => {
     await axios.post(BASE_URL, { data: NewTodo.trim() })
+    setNewTodo('')
     fetchTodo()
 
   }
